@@ -10,8 +10,8 @@ var idGen;
 
 mongoose.connect(process.env.DB_URI, {useNewUrlParser: true, useUnifiedTopology: true});
 const websiteSchema = new mongoose.Schema({
-  url : String,
-  numId : Number
+  original_url : String,
+  short_url : Number
 });
 
 const Website = mongoose.model('Website', websiteSchema);
@@ -21,7 +21,7 @@ const createShortUrl = (someUrl, done) => {
   dns.lookup(domain, (err, address, family) => {
     if (err) return done(err);
     idGen++;
-    Website.create({url: someUrl, numId: idGen}, (err, data) => {
+    Website.create({original_url: someUrl, short_url: idGen}, (err, data) => {
       if (err) return done(err);
       console.log("object created!");
       done(null, data);
@@ -31,21 +31,21 @@ const createShortUrl = (someUrl, done) => {
 
 
 const findUrlById = (someId, done) => {
-  Website.findOne({numId: someId}, (err, data) => {
+  Website.findOne({short_url: someId}, (err, data) => {
     if (err) return done(err);
     done(null, data);
   });
 };
 
 const checkUrl = (someUrl, done) => {
-  Website.findOne({url: someUrl}, (err, data)=> {
+  Website.findOne({original_url: someUrl}, (err, data)=> {
     if (err) return done(err);
     done(null, data);
   });
 };
 
 const getMaxId = (done) => {
-  Website.findOne().sort({numId:-1}).exec((err, data) => {
+  Website.findOne().sort({short_url:-1}).exec((err, data) => {
     if (err) return done(err);
     done(null, data);
   });
@@ -55,7 +55,7 @@ getMaxId((err, data) => {
   if (err) {
     handleError(err);
   } else if (data) {
-    idGen = data.numId;
+    idGen = data.short_url;
   } else {
     idGen = 0;
   }
@@ -86,14 +86,14 @@ app.post('/api/shorturl/new', function(req,res) {
         handleError(err);
       } else if (data) {
         //if the short url already exist
-        res.json({"original_url": data.url, "short_url": data.numId});
+        res.json({"original_url": data.original_url, "short_url": data.short_url});
       } else {
         //if the short url hasn been made
         createShortUrl(req.body.url, (err, data) => {
           if (err) {
             handleError(err);
           } else {
-            res.json({"original_url": data.url, "short_url": data.numId});
+            res.json({"original_url": data.original_url, "short_url": data.short_url});
           };
         });
       }
@@ -108,9 +108,7 @@ app.get("/api/shorturl/:num", function(req,res) {
     if (err) {
       res.json({"error":"No short URL found for the given input"});
     } else {
-      console.log(data.url);
-      console.log(typeof data.url);
-      res.redirect(data.url);
+      res.redirect(data.original_url);
     }
   });
 });
