@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const dns = require('dns');
 const protocolRegex = /^https?:\/\//;
+const url = require('url');
 var idGen;
 
 mongoose.connect(process.env.DB_URI, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -17,8 +18,8 @@ const websiteSchema = new mongoose.Schema({
 const Website = mongoose.model('Website', websiteSchema);
 
 const createShortUrl = (someUrl, done) => {
-  let domain = someUrl.replace(protocolRegex, "");
-  dns.lookup(domain, (err, address, family) => {
+  let domain = new URL(someUrl);
+  dns.lookup(domain.hostname, (err, address, family) => {
     if (err) return done(err);
     idGen++;
     Website.create({original_url: someUrl, short_url: idGen}, (err, data) => {
