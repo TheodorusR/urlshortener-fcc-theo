@@ -53,7 +53,7 @@ const getMaxId = (done) => {
 
 getMaxId((err, data) => {
   if (err) {
-    handleError(err);
+    console.log(err);
   } else if (data) {
     idGen = data.short_url;
   } else {
@@ -83,7 +83,7 @@ app.post('/api/shorturl/new', function(req,res) {
   if (protocolRegex.test(req.body.url)) {
     checkUrl(req.body.url, (err,data) => {
       if (err) {
-        handleError(err);
+        console.log(err);
       } else if (data) {
         //if the short url already exist
         res.json({"original_url": data.original_url, "short_url": data.short_url});
@@ -91,7 +91,7 @@ app.post('/api/shorturl/new', function(req,res) {
         //if the short url hasn been made
         createShortUrl(req.body.url, (err, data) => {
           if (err) {
-            handleError(err);
+            console.log(err);
           } else {
             res.json({"original_url": data.original_url, "short_url": data.short_url});
           };
